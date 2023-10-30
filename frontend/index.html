@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <title>Websocket with Golang</title>
+  </head>
+
+  <body>
+    <div class="center">
+      <h1>Amazing Chat Application</h1>
+      <h3 id="chat-header">Currently Chat: general</h3>
+
+      <form id="chatroom-selection">
+        <label for="chatroom">Chatroom:</label>
+        <input type="text" id="chatroom" name="chatroom" /><br /><br />
+        <input type="submit" value="Change chatroom" />
+      </form>
+
+      <br />
+
+      <textarea
+        class="messagearea"
+        id="chatmessages"
+        readonly
+        name="chatmessages"
+        rows="4"
+        cols="50"
+        placeholder="Welcome to chatroom"
+      ></textarea>
+
+      <br />
+
+      <form id="chatroom-message">
+        <label for="message">Message:</label>
+        <input type="text" id="message" name="message" /><br /><br />
+        <input type="submit" value="Send Message" />
+      </form>
+    </div>
+  </body>
+
+  <script>
+    var selectedChatroom = 'general';
+
+    function changeChatroom() {
+      var newChat = document.getElementById('chatroom').value;
+      if (newChat != null && newChat.value != selectedChatroom) {
+        console.log(newChat);
+      }
+      return false;
+    }
+
+    function sendMessage() {
+      var newMessage = document.getElementById('message');
+      if (newMessage != null) {
+        console.log(newMessage);
+        conn.send(newMessage.value);
+      }
+      return false;
+    }
+
+    window.onload = function () {
+      document.getElementById('chatroom-selection').onsubmit = changeChatroom;
+      document.getElementById('chatroom-message').onsubmit = sendMessage;
+
+      if (window['WebSocket']) {
+        console.log('support websocket');
+        // connect to ws
+        conn = new WebSocket('ws://' + document.location.host + '/ws');
+
+        conn.onmessage = function (event) {
+          console.log(event);
+        };
+      } else {
+        alert('Your browser does not support WebSocket.');
+      }
+    };
+  </script>
+
+  <style type="text/css">
+    body {
+      overflow: hidden;
+      padding: 0;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #f2f2f2;
+    }
+
+    .center {
+      margin: auto;
+      width: 50%;
+      border: 3px solid #73ad21;
+      padding: 10px;
+    }
+  </style>
+</html>
