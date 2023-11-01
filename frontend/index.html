@@ -59,6 +59,27 @@
       }
     }
 
+    class SendMessageEvent {
+      constructor(message, from) {
+        this.message = message;
+        this.from = from;
+      }
+    }
+
+    class NewMessageEvent {
+      constructor(message, from, sent) {
+        this.message = message;
+        this.from = from;
+        this.sent = sent;
+      }
+    }
+
+    class ChangeChatroomEvent {
+      constructor(chatroom) {
+        this.chatroom = chatroom;
+      }
+    }
+
     function routeEvent(event) {
       if (event.type === undefined) {
         alert('no type field in the event');
@@ -66,12 +87,43 @@
 
       switch (event.type) {
         case 'new_message':
-          console.log('new message');
+          const messageEvent = Object.assign(
+            new NewMessageEvent(),
+            event.payload
+          );
+          appendChatMessage(messageEvent);
           break;
         default:
           alert('unsupported event type');
           break;
       }
+    }
+
+    function appendChatMessage(messageEvent) {
+      var date = new Date(messageEvent.sent);
+      const formattedMsg = `${date.toLocaleString()}: ${messageEvent.from}: ${
+        messageEvent.message
+      }`;
+
+      textarea = document.getElementById('chatmessages');
+      textarea.innerHTML = textarea.innerHTML + '\n' + formattedMsg;
+      textarea.scrollTop = textarea.scrollHeight;
+    }
+
+    function changeChatroom() {
+      var newchat = document.getElementById('chatroom');
+      if (newchat != null && newchat.value != selectedChatroom) {
+        selectedChatroom = newchat.value;
+        header = document.getElementById('chat-header').innerHTML =
+          'Currently in chatroom: ' + selectedChatroom;
+
+        let changeEvent = new ChangeChatroomEvent(selectedChatroom);
+        sendEvent('change_room', changeEvent);
+
+        textarea = document.getElementById('chatmessages');
+        textarea.innerHTML = 'You changed room to ' + selectedChatroom + '\n';
+      }
+      return false;
     }
 
     function sendEvent(eventName, payload) {
@@ -80,18 +132,11 @@
       conn.send(JSON.stringify(event));
     }
 
-    function changeChatroom() {
-      var newChat = document.getElementById('chatroom').value;
-      if (newChat != null && newChat.value != selectedChatroom) {
-        console.log(newChat);
-      }
-      return false;
-    }
-
     function sendMessage() {
       var newMessage = document.getElementById('message');
       if (newMessage != null) {
-        sendEvent('send_message', newMessage.value);
+        let outgoingEvent = new SendMessageEvent(newMessage.value, 'admin');
+        sendEvent('send_message', outgoingEvent);
       }
       return false;
     }
